@@ -1,23 +1,22 @@
-﻿namespace MiniGame
+﻿using static MiniGame.Class1;
+
+namespace MiniGame
 {
-    internal class Program
+    class Program
     {
+        static Player player = new Player(); // 플레이어 객체 생성
+
         static void Main(string[] args)
         {
-          //  게임 시작
-          //  플레이어를 시작방에 놓는다
-          //
-          //  while (플레이어가 출구에 도달할 때까지) {
-          //      현재 방 설명 출력
-          //  가능한 행동 목록 출력
-          //  입력을 받는다
-          //  입력에 따라 행동 실행:
-          //  -방 행동
-          //   - 이동
-          //   - 인벤토리 보기
-}         //
-          //
-          //  출구에 도달하면 게임 종료
+            Console.WriteLine("텍스트 어드벤처 게임에 오신 걸 환영합니다!");
+            Room currentRoom = new StartRoom(); // 처음 방은 StartRoom
+
+            while (true)
+            {
+                currentRoom.Enter(player); // 현재 방의 입장 이벤트 실행
+                if (currentRoom.CanMove)   // 이동 가능한 경우
+                    currentRoom = currentRoom.Move(player); // 다음 방으로 이동
+            }
         }
     }
 }
