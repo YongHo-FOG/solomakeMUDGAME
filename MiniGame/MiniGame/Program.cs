@@ -1,26 +1,23 @@
-﻿using System.Threading;
-
-namespace MiniGame
+﻿namespace MiniGame
 {
     internal class Program
     {
-        public class Player
-        {
-            public string Name;
-            public int HP;
-            public int MaxHP;
-            public int Attack;
-            public List<Item> Inventory = new List<Item>();
-
-            public void AttackMonster(Monster monster)
-            {
-                Console.WriteLine($"{Name}이(가) {monster.Name}을(를) 공격했습니다!");
-                monster.HP -= this.Attack;
-            }
-        }
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+          //  게임 시작
+          //  플레이어를 시작방에 놓는다
+          //
+          //  while (플레이어가 출구에 도달할 때까지) {
+          //      현재 방 설명 출력
+          //  가능한 행동 목록 출력
+          //  입력을 받는다
+          //  입력에 따라 행동 실행:
+          //  -방 행동
+          //   - 이동
+          //   - 인벤토리 보기
+}         //
+          //
+          //  출구에 도달하면 게임 종료
         }
     }
 }
