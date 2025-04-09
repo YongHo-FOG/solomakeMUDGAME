@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MiniGame
+﻿namespace MiniGame
 {
     // 게임 전체를 구성하는 클래스 모음
     internal class Class1
     {
+        // 게임 엔딩 클래스 , 그런데 열거형으로 만드는것이 더 도움이 된다고한다?
+        public class GameManager
+        {
+            public bool Gameover { get; set; } = false; // 마지막 방에 도달하면 true로 변경
+            public bool HiddenEnding { get; set; } = false; // 쪽지를 모두 찾을경우 true 로 변경
+        }
+
         // ========== 1. 아이템 클래스 ==========
         public class Item
         {
@@ -43,14 +44,14 @@ namespace MiniGame
         public class StartRoom : Room
         {
             // 상태 관리 변수들
-            bool firstVisit = true;
-            bool keyFound = false;
-            bool noteFound = false;
+            bool firstVisit = true; // 방문횟수가 처음인가?
+            bool keyFound = false; // 잠겨있는 방을 열 수있는 아이템을 찾았는가?
+            bool noteFound = false; // 진엔딩을 볼 수 있는 아이템을 찾았는가?
             int frameAttempts = 0;   // 액자 시도 횟수
 
             public override void Enter(Player player)
             {
-                
+
                 Console.WriteLine("\n[낡은 침대가 있는 어두운 방]");
 
                 if (firstVisit)
@@ -88,7 +89,7 @@ namespace MiniGame
             {
                 if (keyFound)
                 {
-                    Console.WriteLine("더 이상 볼 것은 없다.");
+                    Console.WriteLine("\n 더 이상 볼 것은 없다.");
                     return;
                 }
 
@@ -129,7 +130,7 @@ namespace MiniGame
                         frameAttempts++;
 
                         if (frameAttempts == 1)
-                        { 
+                        {
                             Console.WriteLine("제법 단단히 붙어있어 떼어지지 않는다.");
                         }
                         else if (frameAttempts == 2)
@@ -161,10 +162,10 @@ namespace MiniGame
             public override Room Move(Player player) => new Hallway(); // 연결통로로 이동
         }
 
-        public class Hallway : Room
+        public class Hallway : Room // 연결통로 방에 대한 설정
         {
-            public bool firstVisit = true;
-            public bool examined = false; // 주위를 둘러봤는지
+            public bool firstVisit = true; // 첫 방문인가
+            public bool Lookaround = false; // 주위를 둘러봤는지
 
             // 현재 의도한 부분은 처음 방에 도달 한 때에만 텍스트가 출력되고 이후 재방문 시에는 텍스트 출력이 되지 않아야한다. 현재 계속 출력됨.
             // 또한 연결통로의 경우 둘러보기를 한 후의 선택지가 5개가 되고 이후에 다른 방을 다녀온 이후에는 둘러본 결과가 true로 고정되고 계속 선택지는 5개가 나와야하는데...?아니다?
@@ -183,13 +184,16 @@ namespace MiniGame
                     player.Inventory.Add("동전 모양의 열쇠");
                 }
 
+                Console.WriteLine("여긴 대체 어디지...");
+
                 Console.WriteLine("\n[연결통로]");
 
-                Console.WriteLine("1. 주위를 둘러본다"); 
 
-                if (examined)
+
+                if (Lookaround)
                 {
                     // 주위를 이미 둘러봤으면 무조건 5개 선택지 고정
+                    Console.WriteLine("1. 주위를 둘러본다");
                     Console.WriteLine("2. 왼쪽 문으로 이동한다");
                     Console.WriteLine("3. 오른쪽 문으로 이동한다");
                     Console.WriteLine("4. 정면 문으로 이동한다");
@@ -197,20 +201,26 @@ namespace MiniGame
                 }
                 else
                 {
-                    // 아직 주위를 둘러보지 않았으면 2번만
+                    // 아직 주위를 둘러보지 않았으면 
+                    Console.WriteLine("1. 주위를 둘러본다");
                     Console.WriteLine("2. 이전 방으로 돌아간다");
                 }
 
                 Console.Write("선택: ");
                 string choice = Console.ReadLine();
 
-                // 행동 처리
+                // 행동 처리 
+                // 1을 입력받으면 대사출력과 함께 다른 선택지 추가한걸로 다시 출력
+                // 2를 입력받으면 서재로 이동
+                // 3을 입력받으면 테라스로 이동
+                // 4를 입력받으면 졍면 문 열기 시행
+                // 5를 입력받으면 시작방으로 이동.
                 if (choice == "1")
                 {
                     Console.WriteLine("독특한 디자인의 방이다...\n또 다른 문이 3개가 있다.");
-                    examined = true;
+                    Lookaround = true;
                 }
-                else if ((choice == "2" && !examined) || (choice == "5" && examined))
+                else if ((choice == "2" && !Lookaround) || (choice == "5" && Lookaround))
                 {
                     if (player.Inventory.Contains("의문의 쪽지 -1"))
                     {
@@ -219,18 +229,28 @@ namespace MiniGame
                     else
                         CanMove = true;
                 }
-                else if ((choice == "2" || choice == "3" || choice == "4") && examined)
+                else if ((choice == "2" || choice == "3" || choice == "4") && Lookaround)
                 {
-                    if (choice == "4" && !player.Inventory.Contains("동전 모양의 열쇠"))
+                    if (choice == "4" && player.Inventory.Contains("동전 모양의 열쇠"))
                     {
                         Console.WriteLine("동전모양의 열쇠를 문에 보이는 구멍에 꽂았더니 찰칵 소리와 함께 문이 움직인다.");
                         CanMove = true;
                     }
-                    else
+                    else if (choice == "2" && Lookaround)
                     {
-                        Console.WriteLine("독특한 구멍이 있다. 아직 열 수 없다.");
+                        Console.WriteLine("왼쪽에 보이는 방의 문을 열어보니 여기는 서재인 것 같다.");
+                        CanMove = true;
                     }
-                        
+                    else if (choice == "3" && Lookaround)
+                    {
+                        Console.WriteLine("오른쪽에 보이는 방의 문을 열어보니 여기는 테라스인 것 같다.");
+                        CanMove = true;
+                    }
+                    else if (choice == "4" && Lookaround)
+                    {
+                        Console.WriteLine("잠겨있다. 자세히 보니 문에 독특한 구멍이 있다. 이 문을 열기 위해서는 뭔가 필요한 것 같다.");
+                    }
+
                 }
             }
 
@@ -240,15 +260,29 @@ namespace MiniGame
             // 여기서 마찬가지로 시작방으로 돌아갈때 또한 텍스트가 제출력된다. 근본적인 수정이 필요함.
             public override Room Move(Player player)
             {
-                Console.Write("이동할 방 번호를 입력하세요: ");
+
                 string input = Console.ReadLine();
-          
+
+                if (input == "2")
+                {
+                    Console.WriteLine("서재로 이동할까? (y/n)");
+
+                    string decision = Console.ReadLine();
+
+                    if (decision == "y" || decision == "Y")
+                    {
+
+                        return new Library(); // 예시: 다시 시작방으로
+                    }
+                }
+
+                // 최종 이동 (switch 표현식 사용)
                 return input switch
                 {
                     "2" => new Library(),
                     "3" => new Terrace(),
-                    
                     "5" => new StartRoom(),
+                    _ => throw new InvalidOperationException("잘못된 입력입니다.")
                 };
             }
         }
@@ -271,12 +305,17 @@ namespace MiniGame
                 }
 
                 // 행동 선택지
-                Console.WriteLine("1. 이상한 책을 펼친다\n2. 방의 스위치를 누른다");
-                if (lightOff && !foundShiny)
-                    Console.WriteLine("3. '작게 빛나는 무언가'를 줍는다"); // 방이 어두우면 빛나는 무언가 등장
-                Console.WriteLine("4. 연결통로로 돌아간다");
+                if(!lightOff && !foundShiny || !lightOff && foundShiny || lightOff && foundShiny)
+                {
+                    Console.WriteLine("1.이상하게 눈이가는 책을 집는다.\n2.방의 스위치를 누른다\n0.연결통로로 돌아간다.");
+                }
+                else if(lightOff && !foundShiny)
+                {
+                    Console.WriteLine("1.이상하게 눈이가는 책을 집는다.\n2.방의 스위치를 누른다\n3.작게 빛나는 무언가를 줍는다.\n0.연결통로로 돌아간다");
+                }
 
-                Console.Write("선택: ");
+
+                    Console.Write("선택: ");
                 string choice = Console.ReadLine();
 
                 switch (choice)
@@ -308,12 +347,12 @@ namespace MiniGame
                         }
                         break;
 
-                    case "4": // 연결통로로 돌아간다
+                    case "0": // 연결통로로 돌아간다
                         CanMove = true;
                         break;
-                        // 이 부분도 기본적으로 케이스로 구분되어 1~4번의 선택지가 지정되지만 방이 어두워지기 전에는 1~3번의 선택지로 책,스위치,통로돌아가기 이고
-                        //이후에 불이 어두워지면 1~4번으로 선택지가 늘어나고 다시 불이 켜지면 선택지가 줄어들도록 할 수있어야 하는것이 의도인데...어떻게?
-                        // 변수를 추가하여 그 변수가 true 일때와 false 일때 나오는 선택지를 각각 구분해면 될까?
+                    // 이 부분도 기본적으로 케이스로 구분되어 1~4번의 선택지가 지정되지만 방이 어두워지기 전에는 1~3번의 선택지로 책,스위치,통로돌아가기 이고
+                    //이후에 불이 어두워지면 1~4번으로 선택지가 늘어나고 다시 불이 켜지면 선택지가 줄어들도록 할 수있어야 하는것이 의도인데...어떻게?
+                    // 변수를 추가하여 그 변수가 true 일때와 false 일때 나오는 선택지를 각각 구분해면 될까?
                     default:
                         Console.WriteLine("잘못된 선택입니다.");
                         break;
@@ -391,44 +430,44 @@ namespace MiniGame
             }
         }
 
-       // // ========== 7. 플레이어 행동 (PlayerAction) 클래스 ==========
-       // public class PlayerAction
-       // {
-       //     public string Description { get; private set; }  // 행동에 대한 설명
-       //     public List<InteractableObject> InteractableObjects { get; private set; }
-       //     // 상호작용할 수 있는 오브젝트 목록
-       //
-       //     public PlayerAction(string description)
-       //     {
-       //         Description = description;
-       //         InteractableObjects = new List<InteractableObject>();
-       //     }
-       //
-       //     public void Perform(Player player)
-       //     {
-       //         // 행동을 수행하고 오브젝트와 상호작용하는 로직 작성 예정
-       //     }
-       // }
-       //
-       // // ========== 8. 상호작용 가능한 오브젝트 (InteractableObject) 클래스 ==========
-       // public class InteractableObject
-       // {
-       //     public string Name { get; private set; }  // 오브젝트 이름
-       //     public string Description { get; private set; } // 오브젝트 설명
-       //     public Item ItemInside { get; private set; }  // 오브젝트 안에 들어있는 아이템
-       //     public bool IsActive { get; private set; } = true;  // 오브젝트가 활성 상태인지 여부
-       //
-       //     public InteractableObject(string name, string description, Item itemInside)
-       //     {
-       //         Name = name;
-       //         Description = description;
-       //         ItemInside = itemInside;
-       //     }
-       //
-       //     public void Interact(Player player)
-       //     {
-       //         // 플레이어가 이 오브젝트와 상호작용할 때 실행할 로직 작성 예정
-       //     }
-       // }
+        // // ========== 7. 플레이어 행동 (PlayerAction) 클래스 ==========
+        // public class PlayerAction
+        // {
+        //     public string Description { get; private set; }  // 행동에 대한 설명
+        //     public List<InteractableObject> InteractableObjects { get; private set; }
+        //     // 상호작용할 수 있는 오브젝트 목록
+        //
+        //     public PlayerAction(string description)
+        //     {
+        //         Description = description;
+        //         InteractableObjects = new List<InteractableObject>();
+        //     }
+        //
+        //     public void Perform(Player player)
+        //     {
+        //         // 행동을 수행하고 오브젝트와 상호작용하는 로직 작성 예정
+        //     }
+        // }
+        //
+        // // ========== 8. 상호작용 가능한 오브젝트 (InteractableObject) 클래스 ==========
+        // public class InteractableObject
+        // {
+        //     public string Name { get; private set; }  // 오브젝트 이름
+        //     public string Description { get; private set; } // 오브젝트 설명
+        //     public Item ItemInside { get; private set; }  // 오브젝트 안에 들어있는 아이템
+        //     public bool IsActive { get; private set; } = true;  // 오브젝트가 활성 상태인지 여부
+        //
+        //     public InteractableObject(string name, string description, Item itemInside)
+        //     {
+        //         Name = name;
+        //         Description = description;
+        //         ItemInside = itemInside;
+        //     }
+        //
+        //     public void Interact(Player player)
+        //     {
+        //         // 플레이어가 이 오브젝트와 상호작용할 때 실행할 로직 작성 예정
+        //     }
+        // }
     }
 }
