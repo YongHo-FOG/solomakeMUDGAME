@@ -129,9 +129,13 @@ namespace MiniGame
                         frameAttempts++;
 
                         if (frameAttempts == 1)
+                        { 
                             Console.WriteLine("제법 단단히 붙어있어 떼어지지 않는다.");
+                        }
                         else if (frameAttempts == 2)
+                        {
                             Console.WriteLine("조금 헐거워진 것 같다.");
+                        }
                         else if (frameAttempts == 3)
                         {
                             Console.WriteLine("벽에서 액자가 떨어졌다!\n'의문의 쪽지 -1'을 얻었다.");
@@ -150,7 +154,7 @@ namespace MiniGame
                         Console.WriteLine("잘못된 입력입니다."); // 잘못 입력해도 계속 반복
                     }
 
-                    // 추가: 액자 떨어뜨리고 나면 자동으로 빠져나가기 때문에 추가 코드 필요 없음
+                    // 추가: 액자 때고 나면 자동으로 빠져나가기 때문에 추가 코드 필요 없음
                 }
             }
 
@@ -160,7 +164,7 @@ namespace MiniGame
         public class Hallway : Room
         {
             public bool firstVisit = true;
-            bool examined = false; // 주위를 둘러봤는지
+            public bool examined = false; // 주위를 둘러봤는지
 
             // 현재 의도한 부분은 처음 방에 도달 한 때에만 텍스트가 출력되고 이후 재방문 시에는 텍스트 출력이 되지 않아야한다. 현재 계속 출력됨.
             // 또한 연결통로의 경우 둘러보기를 한 후의 선택지가 5개가 되고 이후에 다른 방을 다녀온 이후에는 둘러본 결과가 true로 고정되고 계속 선택지는 5개가 나와야하는데...?아니다?
@@ -209,20 +213,28 @@ namespace MiniGame
                 else if ((choice == "2" && !examined) || (choice == "5" && examined))
                 {
                     if (player.Inventory.Contains("의문의 쪽지 -1"))
+                    {
                         Console.WriteLine("다시 돌아갈 필요는 없을 것 같다.");
+                    }
                     else
                         CanMove = true;
                 }
                 else if ((choice == "2" || choice == "3" || choice == "4") && examined)
                 {
                     if (choice == "4" && !player.Inventory.Contains("동전 모양의 열쇠"))
-                        Console.WriteLine("독특한 구멍이 있다. 아직 열 수 없다.");
-                    else
+                    {
+                        Console.WriteLine("동전모양의 열쇠를 문에 보이는 구멍에 꽂았더니 찰칵 소리와 함께 문이 움직인다.");
                         CanMove = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("독특한 구멍이 있다. 아직 열 수 없다.");
+                    }
+                        
                 }
             }
 
-            // 현재 연결통로에서 서재와 테라스로 이동 할 때에 선택지 번호를 두번 입력해야한다.
+            // 현재 연결통로에서 다른 방으로 이동 할 때에 선택지 번호를 두번 입력해야한다.
             // 선택지 입력에서 바로 이동하게 해야하는가? 그렇다면 여기에서는 오버라이드를 쓰지못하는것인가?
             // 그런데 추상클래스로 구현한것이라서 구현하지않으면 오류가 날탠데? 그럼 어떻게 바꿔야하지?
             // 여기서 마찬가지로 시작방으로 돌아갈때 또한 텍스트가 제출력된다. 근본적인 수정이 필요함.
