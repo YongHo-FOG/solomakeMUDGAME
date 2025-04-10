@@ -29,7 +29,7 @@
         public class Player
         {
             public List<Item> Inventory = new List<Item>(); // 아이템 객체 저장
-
+            
             public void ShowInventory()
             {
                 Console.WriteLine("\n==== [인벤토리] ====");
@@ -145,7 +145,7 @@
                         if (player.HasItem("쇠로 된 열쇠"))
                         {
                             Console.WriteLine("끼이익 하는 소리와 함께 문이 열렸다!");
-                            player.RemoveItemByName("쇠로 된 열쇠");
+                            // player.RemoveItemByName("쇠로 된 열쇠");
                             CanMove = true;
                         }
                         else
@@ -307,9 +307,9 @@
                 {
                     player.ShowInventory(); //  인벤토리 출력
                 }
-                else if ((lastChoice == "2" && !Lookaround) || (lastChoice == "5" && Lookaround))
+                else if ((lastChoice == "2" && !Lookaround))
                 {
-                    if (player.HasItem("의문의 쪽지 -1") || player.HasItem("동전모양의 열쇠"))
+                    if (player.HasItem("의문의 쪽지 -1") || player.HasItem("동전 모양의 열쇠"))
                     {
                         Console.WriteLine("다시 돌아갈 필요는 없을 것 같다.");
                     }
@@ -318,11 +318,11 @@
                         CanMove = true;
                     }
                 }
-                else if ((lastChoice == "2" || lastChoice == "3" || lastChoice == "4") && Lookaround)
+                else if ((lastChoice == "2" || lastChoice == "3" || lastChoice == "4" || lastChoice =="5" && Lookaround))
                 {
-                    if (lastChoice == "4" && player.HasItem("동전 모양의 열쇠"))
+                    if (lastChoice == "2" )
                     {
-                        Console.WriteLine("동전 모양의 열쇠를 문에 꽂았더니 찰칵 소리와 함께 문이 열렸다.");
+                        Console.WriteLine("혹시 놓친것이 있을까? 다시 침대가 있던 방으로 돌아가보자.");
                         CanMove = true;
                     }
                     else if (lastChoice == "3" && Lookaround)
@@ -330,12 +330,17 @@
                         Console.WriteLine("왼쪽 문을 열어보니 서재로 연결된다.");
                         CanMove = true;
                     }
-                    else if (lastChoice == "4")
+                    else if (lastChoice == "4" && Lookaround)
                     {
                         Console.WriteLine("오른쪽 문을 열어보니 테라스로 연결된다.");
                         CanMove = true;
                     }
-                    else if (lastChoice == "5")
+                    else if (lastChoice == "5" && Lookaround && player.HasItem("동전 모양의 열쇠"))
+                    {
+                        Console.WriteLine("동전 모양의 열쇠를 꽂으니 기계음을 내면서 문이 열렸다.");
+                        CanMove = true;
+                    }
+                    else if (lastChoice == "5" && Lookaround)
                     {
                         Console.WriteLine("문이 잠겨있다. 자세히보니 독특한 둥근 구멍이 있다. 여기에 무언가를 꽂아야할지도?");
                     }
