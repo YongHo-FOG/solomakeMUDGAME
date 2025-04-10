@@ -24,7 +24,6 @@
                 IsKeyItem = isKeyItem;
             }
         }
-
         // ========== 2. 플레이어 클래스 ==========
         // 플레이어 클래스 (아이템 인벤토리 보유)
         public class Player
@@ -71,6 +70,29 @@
 
 
         // ========== 3. 방 (Room) 클래스 ==========
+        public static class RoomFactory
+        {
+            public static Room CreateRoom(string roomType, GameManager gameManager)
+            {
+                switch (roomType)
+                {
+                    case "StartRoom":
+                        return new StartRoom(gameManager);
+                    case "Hallway":
+                        return new Hallway(gameManager);
+                    case "Library":
+                        return new Library(gameManager);
+                    case "Terrace":
+                        return new Terrace(gameManager);
+                    case "FinalRoom":
+                        return new FinalRoom(gameManager);
+
+                    // 필요에 따라 다른 Room도 추가
+                    default:
+                        throw new ArgumentException($"알 수 없는 방 타입입니다: {roomType}");
+                }
+            }
+        }
         public abstract class Room
         {
             public bool CanMove { get; protected set; } = false; // 방을 이동할 수 있는지
@@ -81,16 +103,16 @@
         public class StartRoom : Room
         {
             private GameManager gameManager;
-
-            public StartRoom(GameManager gm)
-            {
-                gameManager = gm;
-            }
             // 상태 관리 변수들
             bool firstVisit = true; // 방문횟수가 처음인가?
             bool keyFound = false; // 잠겨있는 방을 열 수있는 아이템을 찾았는가?
             bool noteFound = false; // 진엔딩을 볼 수 있는 아이템을 찾았는가?
             int frameAttempts = 0;   // 액자 시도 횟수
+            public StartRoom(GameManager gm)
+            {
+                gameManager = gm;
+            }
+            // 상태 관리 변수들
 
             public override void Enter(Player player)
             {
@@ -140,7 +162,8 @@
             // 침대 밑 확인
             void InspectUnderBed(Player player)
             {
-                if (keyFound)
+                if (keyFound && noteFound) // 열쇠를 찾았거나 이미 문을열어서 소모했다면 다시 열쇠를 찾지못해야한다.
+                    // 아직 다른방 다녀온후 다시 초기방으로 돌아와서 선택지를 진행하면 열쇠를 또얻게됨.
                 {
                     Console.WriteLine("\n 더 이상 볼 것은 없다.");
                     return;
@@ -149,15 +172,19 @@
                 Console.WriteLine("1. 손을 휘저어 쥐들을 쫓아낸다\n2. 아무것도 하지 않는다");
                 Console.Write("선택: ");
                 string subChoice = Console.ReadLine();
-                if (subChoice == "1")
+                if (!keyFound && subChoice == "1")
                 {
                     Console.WriteLine("쥐들을 쫓아냈다. '쇠로 된 열쇠'를 얻었다!");
                     player.AddItem(new Item("쇠로 된 열쇠", "녹슨 오래된 열쇠"));
                     keyFound = true;
                 }
-                else
+                else if (keyFound && subChoice == "1" && !noteFound)
                 {
-                    Console.WriteLine("아무 일도 일어나지 않았다.");
+                    Console.WriteLine("쥐들의 불쾌해하는것 같다. 여기엔 아무것도 없다.");
+                }
+                else if(subChoice == "2")
+                {
+                    Console.WriteLine("쥐들을 괴롭히지 말자.");
                 }
             }
 
@@ -216,8 +243,8 @@
             public override Room Move(Player player)
             {
                 Console.Clear();
-                return new Hallway(gameManager);
-            } // 연결통로로 이동
+                return RoomFactory.CreateRoom("Hallway", gameManager);
+            }
         }
 
 
@@ -249,10 +276,10 @@
                     ? new List<string>
                     {
                         "1. 주위를 둘러본다",
-                        "2. 왼쪽 문으로 이동한다",
-                        "3. 오른쪽 문으로 이동한다",
-                        "4. 정면 문으로 이동한다",
-                        "5. 이전 방으로 돌아간다",
+                        "2. 이전 방으로 돌아간다",
+                        "3. 왼쪽 문으로 이동한다",
+                        "4. 오른쪽 문으로 이동한다",
+                        "5. 정면의 문으로 이동한다.",
                         "0. 인벤토리 보기"
                     }
                     : new List<string>
@@ -282,11 +309,11 @@
                 }
                 else if ((lastChoice == "2" && !Lookaround) || (lastChoice == "5" && Lookaround))
                 {
-                    if (player.HasItem("의문의 쪽지 -1"))
+                    if (player.HasItem("의문의 쪽지 -1") || player.HasItem("동전모양의 열쇠"))
                     {
                         Console.WriteLine("다시 돌아갈 필요는 없을 것 같다.");
                     }
-                    else
+                    else if(!Lookaround && lastChoice == "2")
                     {
                         CanMove = true;
                     }
@@ -298,17 +325,17 @@
                         Console.WriteLine("동전 모양의 열쇠를 문에 꽂았더니 찰칵 소리와 함께 문이 열렸다.");
                         CanMove = true;
                     }
-                    else if (lastChoice == "2" && Lookaround)
+                    else if (lastChoice == "3" && Lookaround)
                     {
                         Console.WriteLine("왼쪽 문을 열어보니 서재로 연결된다.");
                         CanMove = true;
                     }
-                    else if (lastChoice == "3")
+                    else if (lastChoice == "4")
                     {
                         Console.WriteLine("오른쪽 문을 열어보니 테라스로 연결된다.");
                         CanMove = true;
                     }
-                    else if (lastChoice == "4")
+                    else if (lastChoice == "5")
                     {
                         Console.WriteLine("문이 잠겨있다. 자세히보니 독특한 둥근 구멍이 있다. 여기에 무언가를 꽂아야할지도?");
                     }
@@ -319,10 +346,10 @@
             {
                 return lastChoice switch
                 {
-                    "2" => new Library(gameManager),
-                    "3" => new Terrace(gameManager),
-                    "4" => new FinalRoom(gameManager),
-                    "5" => new StartRoom(gameManager),
+                    "2" => new StartRoom(gameManager),
+                    "3" => new Library(gameManager),
+                    "4" => new Terrace(gameManager),
+                    "5" => new FinalRoom(gameManager),
                     _ => this // 현재 방 유지
                 };
             }
@@ -414,7 +441,7 @@
             public override Room Move(Player player)
             {
                 Console.Clear();
-                return new Hallway(gameManager); // 항상 연결통로로 돌아감
+                return RoomFactory.CreateRoom("Hallway", gameManager);
             }
         }
         public class Terrace : Room
@@ -498,7 +525,7 @@
             public override Room Move(Player player)
             {
                 Console.Clear();
-                return new Hallway(gameManager); // 항상 연결통로로 돌아감
+                return RoomFactory.CreateRoom("Hallway", gameManager);
             }
         }
 
