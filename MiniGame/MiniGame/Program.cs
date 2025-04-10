@@ -14,8 +14,9 @@ namespace MiniGame
             Console.WriteLine("시작하려면 아무 버튼이나 눌러주세요");
             Console.ReadKey(true);
             Console.Clear();
-            Room currentRoom = new StartRoom(); // 처음 방은 StartRoom
-            GameManager gameManager = new GameManager(); 
+            GameManager gameManager = new GameManager();
+            Room currentRoom = new StartRoom(gameManager); // 처음 방은 StartRoom
+             
             
 
             while (true)
