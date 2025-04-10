@@ -29,7 +29,44 @@
         // 플레이어 클래스 (아이템 인벤토리 보유)
         public class Player
         {
-            public List<string> Inventory = new List<string>();
+            public List<Item> Inventory = new List<Item>(); // ✅ 아이템 객체 저장
+
+            public void ShowInventory()
+            {
+                Console.WriteLine("\n==== [인벤토리] ====");
+
+                if (Inventory.Count == 0)
+                {
+                    Console.WriteLine("인벤토리가 비어 있습니다.");
+                    return;
+                }
+
+                foreach (var item in Inventory)
+                {
+                    Console.WriteLine($"- {item.Name}: {item.Description}");
+                }
+            }
+
+            public bool HasItem(string itemName)
+            {
+                return Inventory.Exists(i => i.Name == itemName);
+            }
+
+            public void AddItem(Item item)
+            {
+                Inventory.Add(item);
+                Console.WriteLine($"'{item.Name}'를(을) 얻었다!");
+            }
+
+            public void RemoveItemByName(string itemName)
+            {
+                Item item = Inventory.Find(i => i.Name == itemName);
+                if (item != null)
+                {
+                    Inventory.Remove(item);
+                    Console.WriteLine($"'{item.Name}'을(를) 인벤토리에서 제거했다.");
+                }
+            }
         }
 
 
@@ -57,35 +94,45 @@
 
             public override void Enter(Player player)
             {
-
                 Console.WriteLine("\n[낡은 침대가 있는 어두운 방]");
 
                 if (firstVisit)
                 {
                     Console.WriteLine("내가 왜 이런 곳에 있지... 뭔가 이상해... 일단 나가야겠어.");
-                    firstVisit = false; // 처음 입장했을 때만 출력
+                    firstVisit = false;
                 }
 
-                // 플레이어 행동 선택지
-                Console.WriteLine("1. 문을 연다\n2. 침대 밑을 확인해본다\n3. 벽에 걸린 액자를 확인해본다");
+                List<string> options = new List<string>
+                 {
+                     "1. 문을 연다",
+                     "2. 침대 밑을 확인해본다",
+                     "3. 벽에 걸린 액자를 확인해본다"
+                 };
+
+                foreach (var option in options)
+                {
+                    Console.WriteLine(option);
+                }
+
                 Console.Write("선택: ");
                 string choice = Console.ReadLine();
 
                 switch (choice)
                 {
-                    case "1": // 문을 연다
-                        if (player.Inventory.Contains("쇠로 된 열쇠"))
+                    case "1":
+                        if (player.HasItem("쇠로 된 열쇠"))
                         {
                             Console.WriteLine("끼이익 하는 소리와 함께 문이 열렸다!");
-                            CanMove = true; // 이동 가능 상태로 전환
+                            player.RemoveItemByName("쇠로 된 열쇠");
+                            CanMove = true;
                         }
                         else
                         {
                             Console.WriteLine("잠겨있는 듯 하다.");
                         }
                         break;
-                    case "2": InspectUnderBed(player); break; // 침대 밑 확인
-                    case "3": InspectFrame(player); break;    // 액자 확인
+                    case "2": InspectUnderBed(player); break;
+                    case "3": InspectFrame(player); break;
                     default: Console.WriteLine("잘못된 입력입니다."); break;
                 }
             }
@@ -105,7 +152,7 @@
                 if (subChoice == "1")
                 {
                     Console.WriteLine("쥐들을 쫓아냈다. '쇠로 된 열쇠'를 얻었다!");
-                    player.Inventory.Add("쇠로 된 열쇠");
+                    player.AddItem(new Item("쇠로 된 열쇠", "녹슨 오래된 열쇠"));
                     keyFound = true;
                 }
                 else
@@ -146,7 +193,7 @@
                         else if (frameAttempts == 3)
                         {
                             Console.WriteLine("벽에서 액자가 떨어졌다!\n'의문의 쪽지 -1'을 얻었다.");
-                            player.Inventory.Add("의문의 쪽지 -1");
+                            player.AddItem(new Item("의문의 쪽지 -1", "알 수 없는 메시지가 적힌 쪽지"));
                             noteFound = true;
                             keepInspecting = false; // 성공했으면 반복 종료
                         }
@@ -172,15 +219,14 @@
                 return new Hallway(gameManager);
             } // 연결통로로 이동
         }
-        
+
 
         public class Hallway : Room
         {
-            
             private bool firstVisit = true;
             private bool Lookaround = false;
             private GameManager gameManager;
-            private string lastChoice = ""; // 🔥 선택 기억용 변수 추가
+            private string lastChoice = "";
 
             public Hallway(GameManager gm)
             {
@@ -189,41 +235,54 @@
 
             public override void Enter(Player player)
             {
-                if (player.Inventory.Contains("작게 빛나는 무언가 1") && player.Inventory.Contains("작게 빛나는 무언가 2"))
+                if (player.HasItem("작게 빛나는 무언가 1") && player.HasItem("작게 빛나는 무언가 2"))
                 {
-                    Console.WriteLine("작게 빛나는 무언가가 서로 이끌리듯 합쳐졌다.\n'동전 모양의 열쇠'를 얻었다!");
-                    player.Inventory.Remove("작게 빛나는 무언가 1");
-                    player.Inventory.Remove("작게 빛나는 무언가 2");
-                    player.Inventory.Add("동전 모양의 열쇠");
+                    Console.WriteLine("두 아이템이 합쳐져 '동전 모양의 열쇠'를 얻었다!");
+                    player.RemoveItemByName("작게 빛나는 무언가 1");
+                    player.RemoveItemByName("작게 빛나는 무언가 2");
+                    player.AddItem(new Item("동전 모양의 열쇠", "어딘가의 문을 열 수 있을 것 같다."));
                 }
 
                 Console.WriteLine("\n[연결통로]");
 
-                if (Lookaround)
+                List<string> options = Lookaround
+                    ? new List<string>
+                    {
+                        "1. 주위를 둘러본다",
+                        "2. 왼쪽 문으로 이동한다",
+                        "3. 오른쪽 문으로 이동한다",
+                        "4. 정면 문으로 이동한다",
+                        "5. 이전 방으로 돌아간다",
+                        "0. 인벤토리 보기"
+                    }
+                    : new List<string>
+                    {
+                        "1. 주위를 둘러본다",
+                        "2. 이전 방으로 돌아간다",
+                        "0. 인벤토리 보기"
+                    };
+
+                foreach (var option in options)
                 {
-                    Console.WriteLine("1. 주위를 둘러본다");
-                    Console.WriteLine("2. 왼쪽 문으로 이동한다");
-                    Console.WriteLine("3. 오른쪽 문으로 이동한다");
-                    Console.WriteLine("4. 정면 문으로 이동한다");
-                    Console.WriteLine("5. 이전 방으로 돌아간다");
-                }
-                else
-                {
-                    Console.WriteLine("1. 주위를 둘러본다");
-                    Console.WriteLine("2. 이전 방으로 돌아간다");
+                    Console.WriteLine(option);
                 }
 
                 Console.Write("선택: ");
-                lastChoice = Console.ReadLine(); // 🔥 여기서만 입력을 받는다
+                lastChoice = Console.ReadLine();
+
 
                 if (lastChoice == "1")
                 {
                     Console.WriteLine("독특한 디자인의 방이다...\n또 다른 문이 3개가 있다.");
                     Lookaround = true;
                 }
+                else if (lastChoice == "0")
+                {
+                    player.ShowInventory(); //  인벤토리 출력
+                }
                 else if ((lastChoice == "2" && !Lookaround) || (lastChoice == "5" && Lookaround))
                 {
-                    if (player.Inventory.Contains("의문의 쪽지 -1"))
+                    if (player.HasItem("의문의 쪽지 -1"))
                     {
                         Console.WriteLine("다시 돌아갈 필요는 없을 것 같다.");
                     }
@@ -234,41 +293,41 @@
                 }
                 else if ((lastChoice == "2" || lastChoice == "3" || lastChoice == "4") && Lookaround)
                 {
-                    if (lastChoice == "4" && player.Inventory.Contains("동전 모양의 열쇠"))
+                    if (lastChoice == "4" && player.HasItem("동전 모양의 열쇠"))
                     {
-                        Console.WriteLine("동전 모양의 열쇠를 문에 보이는 구멍에 꽂았더니 찰칵 소리와 함께 문이 움직인다.");
+                        Console.WriteLine("동전 모양의 열쇠를 문에 꽂았더니 찰칵 소리와 함께 문이 열렸다.");
                         CanMove = true;
                     }
-                    else if (lastChoice == "2")
+                    else if (lastChoice == "2" && Lookaround)
                     {
-                        Console.WriteLine("왼쪽에 보이는 방의 문을 열어보니 여기는 서재인 것 같다.");
+                        Console.WriteLine("왼쪽 문을 열어보니 서재로 연결된다.");
                         CanMove = true;
                     }
                     else if (lastChoice == "3")
                     {
-                        Console.WriteLine("오른쪽에 보이는 방의 문을 열어보니 여기는 테라스인 것 같다.");
+                        Console.WriteLine("오른쪽 문을 열어보니 테라스로 연결된다.");
                         CanMove = true;
                     }
                     else if (lastChoice == "4")
                     {
-                        Console.WriteLine("잠겨있다. 자세히 보니 문에 독특한 구멍이 있다. 이 문을 열기 위해서는 뭔가 필요한 것 같다.");
+                        Console.WriteLine("문이 잠겨있다. 자세히보니 독특한 둥근 구멍이 있다. 여기에 무언가를 꽂아야할지도?");
                     }
                 }
             }
 
             public override Room Move(Player player)
             {
-                //  Enter()에서 받은 lastChoice를 기준으로 바로 이동한다
                 return lastChoice switch
                 {
                     "2" => new Library(gameManager),
                     "3" => new Terrace(gameManager),
                     "4" => new FinalRoom(gameManager),
                     "5" => new StartRoom(gameManager),
-                    _ => this // 다른 경우는 현재 방에 머무르기
+                    _ => this // 현재 방 유지
                 };
             }
         }
+
 
         public class Library : Room
         {
@@ -286,36 +345,41 @@
 
             public override void Enter(Player player)
             {
-
                 Console.WriteLine("\n[서재]");
 
                 if (firstVisit)
                 {
                     Console.WriteLine("으... 먼지야... 알아보지도 못하는 제목의 책들이 엄청 많네...");
-                    firstVisit = false; // 첫 방문 시 대사 출력
+                    firstVisit = false;
                 }
 
-                // 행동 선택지
-                if(!lightOff && !foundShiny || !lightOff && foundShiny || lightOff && foundShiny)
+                List<string> options = new List<string>
                 {
-                    Console.WriteLine("1.이상하게 눈이가는 책을 집는다.\n2.방의 스위치를 누른다\n0.연결통로로 돌아간다.");
-                }
-                else if(lightOff && !foundShiny)
+                    "1. 이상하게 눈이 가는 책을 집는다",
+                    "2. 방의 스위치를 누른다",
+                    "0. 연결통로로 돌아간다"
+                };
+
+                if (lightOff && !foundShiny)
                 {
-                    Console.WriteLine("1.이상하게 눈이가는 책을 집는다.\n2.방의 스위치를 누른다\n3.작게 빛나는 무언가를 줍는다.\n0.연결통로로 돌아간다");
+                    options.Insert(2, "3. 작게 빛나는 무언가를 줍는다");
                 }
 
+                foreach (var option in options)
+                {
+                    Console.WriteLine(option);
+                }
 
-                    Console.Write("선택: ");
+                Console.Write("선택: ");
                 string choice = Console.ReadLine();
 
                 switch (choice)
                 {
-                    case "1": // 이상한 책을 펼친다
+                    case "1":
                         if (!gotNote)
                         {
                             Console.WriteLine("중간을 펼치니 '의문의 쪽지 -2'를 얻었다!");
-                            player.Inventory.Add("의문의 쪽지 -2");
+                            player.AddItem(new Item("의문의 쪽지 -2", "또 다른 쪽지"));
                             gotNote = true;
                         }
                         else
@@ -323,25 +387,21 @@
                             Console.WriteLine("이 책에서는 더 얻을 게 없다.");
                         }
                         break;
-
-                    case "2": // 방의 스위치를 누른다
+                    case "2":
                         lightOff = !lightOff;
                         Console.WriteLine(lightOff ? "방이 어두워졌다." : "방이 밝아졌다.");
                         break;
-
-                    case "3": // 어두워졌을 때만 나타나는 아이템
+                    case "3":
                         if (lightOff && !foundShiny)
                         {
                             Console.WriteLine("'작게 빛나는 무언가 2'를 주웠다!");
-                            player.Inventory.Add("작게 빛나는 무언가 2");
+                            player.AddItem(new Item("작게 빛나는 무언가 2", "작은 빛을 내는 물건"));
                             foundShiny = true;
                         }
                         break;
-
-                    case "0": // 연결통로로 돌아간다
+                    case "0":
                         CanMove = true;
                         break;
-                    
                     default:
                         Console.WriteLine("잘못된 선택입니다.");
                         break;
@@ -362,9 +422,9 @@
             {
                 gameManager = gm;
             }
-            
 
-            
+
+
             bool firstVisit = true;   // 처음 입장 여부
             bool foundItem = false;   // '작게 빛나는 무언가 1'을 발견했는지
 
@@ -374,22 +434,31 @@
 
                 if (firstVisit)
                 {
-                    Console.WriteLine("시간이 한밤중이라 그런가... 바깥에는 아무것도 보이지 않는다.");
-                    firstVisit = false; // 첫 방문 시 대사 출력
+                    Console.WriteLine("시간이 한밤중인것일까 어둡다... 바깥에는 아무것도 보이지 않는다.");
+                    firstVisit = false;
                 }
 
-                // 행동 선택지
-                Console.WriteLine("1. 난간을 살펴본다 2. 연결통로로 돌아간다");
+                List<string> options = new List<string>
+                {
+                    "1. 난간을 살펴본다",
+                    "2. 연결통로로 돌아간다"
+                };
+
+                foreach (var option in options)
+                {
+                    Console.WriteLine(option);
+                }
+
                 Console.Write("선택: ");
                 string choice = Console.ReadLine();
 
                 if (choice == "1")
                 {
-                    InspectRailing(player); // 난간 살펴보기
+                    InspectRailing(player);
                 }
                 else if (choice == "2")
                 {
-                    CanMove = true; // 연결통로로 돌아감
+                    CanMove = true;
                 }
                 else
                 {
@@ -413,7 +482,7 @@
                     if (!foundItem)
                     {
                         Console.WriteLine("'작게 빛나는 무언가 1'을 주웠다!");
-                        player.Inventory.Add("작게 빛나는 무언가 1");
+                        player.AddItem(new Item("작게 빛나는 무언가 1", "빛나는 작은 물건"));
                         foundItem = true; // 아이템 1회성
                     }
                     else
@@ -446,24 +515,24 @@
 
                 if (firstVisit)
                 {
-                    Console.WriteLine("커다란 문이 열리고, 당신은 안으로 들어선다...");
+                    Console.WriteLine("문이 열리고, 당신은 안으로 들어선다...");
                     firstVisit = false;
                 }
 
                 // 플레이어 인벤토리를 검사
-                bool hasAllNotes = player.Inventory.Contains("의문의 쪽지 -1") && player.Inventory.Contains("의문의 쪽지 -2");
+                bool hasAllNotes = player.HasItem("의문의 쪽지 -1") && player.HasItem("의문의 쪽지 -2");
 
                 if (hasAllNotes)
                 {
                     Console.WriteLine("방 안에는 숨겨진 진실이 가득하다... 당신은 모든 비밀을 알아냈다.");
-                    gameManager.HiddenEnding = true; // 히든 엔딩 플래그
+                    gameManager.HiddenEnding = true; // 히든 엔딩
                 }
                 else
                 {
                     Console.WriteLine("텅 빈 방... 당신은 겨우 탈출에 성공했다.");
                 }
 
-                gameManager.Gameover = true; // 게임 오버 플래그
+                gameManager.Gameover = true; // 게임 오버
 
                 Console.WriteLine("\n게임이 종료됩니다. 아무 키나 누르세요...");
                 Console.ReadKey();
@@ -475,7 +544,7 @@
                 return null; // 더 이상 이동할 방이 없음
             }
         }
-
+        // 현재 코드를 둘러보면 객체지향은 사용이 되었으나 자료구조나 알고리즘에 관한 내용이 거의 없는듯함...
 
 
 
