@@ -29,7 +29,7 @@
         // 플레이어 클래스 (아이템 인벤토리 보유)
         public class Player
         {
-            public List<Item> Inventory = new List<Item>(); // ✅ 아이템 객체 저장
+            public List<Item> Inventory = new List<Item>(); // 아이템 객체 저장
 
             public void ShowInventory()
             {
@@ -328,7 +328,10 @@
             }
         }
 
-
+        // 현재 의도한 부분은 처음 방에 도달 한 때에만 텍스트가 출력되고 이후 재방문 시에는 텍스트 출력이 되지 않아야한다. 현재 계속 출력됨.
+        // 또한 연결통로의 경우 둘러보기를 한 후의 선택지가 5개가 되고 이후에 다른 방을 다녀온 이후에는 둘러본 결과가 true로 고정되고 계속 선택지는 5개가 나와야하는데...?아니다?
+        // 변수로 설정한 firstVisit 의 값이 false가 될때를 수정해야할까? 조건을 분리하여 fisrtVisit 이 true일때의 선택지와 false 일때의 선택지로 구분하면?
+        // examined 값이 false 에서 true로 된 이후로 다른 방에 다녀온 이후에도 유지되어야 한다...? 어떻게?
         public class Library : Room
         {
             private GameManager gameManager;
@@ -519,7 +522,8 @@
                     firstVisit = false;
                 }
 
-                // 플레이어 인벤토리를 검사
+                // 플레이어 인벤토리를 검사2
+
                 bool hasAllNotes = player.HasItem("의문의 쪽지 -1") && player.HasItem("의문의 쪽지 -2");
 
                 if (hasAllNotes)

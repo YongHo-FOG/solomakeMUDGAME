@@ -27,16 +27,16 @@ namespace MiniGame
                     currentRoom = currentRoom.Move(player); 
                 } // 다음 방으로 이동
 
-                if (gameManager.Gameover)
-                {
-                    Console.WriteLine("당신은 탈출에 성공하였습니다.");
-                    Console.WriteLine("왜 여기에 갇혀있었는지, 또 여긴 어디인지에 대한 의문이 풀리지 않았지만 말이죠...");
-                }
-                else if (gameManager.Gameover && gameManager.HiddenEnding)
-                {
-                    Console.WriteLine("당신은 이 장소의 존재 목적이 무엇인지 알게되었고 여기가 어디인지 알게되었습니다.");
-                    Console.WriteLine("진엔딩 완료");
-                }
+               // if (gameManager.Gameover)
+               // {
+               //     Console.WriteLine("당신은 탈출에 성공하였습니다.");
+               //     Console.WriteLine("왜 여기에 갇혀있었는지, 또 여긴 어디인지에 대한 의문이 풀리지 않았지만 말이죠...");
+               // }
+               // else if (gameManager.Gameover && gameManager.HiddenEnding)
+               // {
+               //     Console.WriteLine("당신은 이 장소의 존재 목적이 무엇인지 알게되었고 여기가 어디인지 알게되었습니다.");
+               //     Console.WriteLine("진엔딩 완료");
+               // }
             }
         }
     }
