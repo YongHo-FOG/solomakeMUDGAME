@@ -514,11 +514,11 @@
 
             public override void Enter(Player player)
             {
-                Console.WriteLine("\n[최종 방]");
+                Console.WriteLine("\n출구");
 
                 if (firstVisit)
                 {
-                    Console.WriteLine("문이 열리고, 당신은 안으로 들어선다...");
+                    Console.WriteLine("문이 열려 밖으로 나왔다.");
                     firstVisit = false;
                 }
 
@@ -528,17 +528,17 @@
 
                 if (hasAllNotes)
                 {
-                    Console.WriteLine("방 안에는 숨겨진 진실이 가득하다... 당신은 모든 비밀을 알아냈다.");
+                    Console.WriteLine("찾은 쪽지를 서로 겹쳐보니 이제는 이해할 수 있다.... 당신은 모든 비밀을 알아냈다.");
                     gameManager.HiddenEnding = true; // 히든 엔딩
                 }
                 else
                 {
-                    Console.WriteLine("텅 빈 방... 당신은 겨우 탈출에 성공했다.");
+                    Console.WriteLine("내가 왜 갇혔는지 이게 대체 무슨일인지 모른체 살기위해 주변 민가를 찾아 달렸다.");
                 }
 
                 gameManager.Gameover = true; // 게임 오버
 
-                Console.WriteLine("\n게임이 종료됩니다. 아무 키나 누르세요...");
+                Console.WriteLine("\n아무버튼이나 눌러서 게임종료.");
                 Console.ReadKey();
                 Environment.Exit(0); // 프로그램 종료
             }
